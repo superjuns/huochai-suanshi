@@ -28,11 +28,75 @@
             font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Noto Sans SC", sans-serif;
             color: var(--ink);
             -webkit-tap-highlight-color: transparent;
-            /* 横屏时禁用滚动，全屏展示 */
             overflow: hidden;
             height: 100vh;
             width: 100vw;
         }
+        /* 旋转提示遮罩 */
+        .rotate-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 1000;
+            background: rgba(23, 61, 55, 0.92);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #f5f0d3;
+            font-size: 20px;
+            font-weight: 500;
+            text-align: center;
+            padding: 20px;
+            transition: opacity 0.5s ease;
+            pointer-events: none;
+            backdrop-filter: blur(4px);
+        }
+        .rotate-overlay.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+        .rotate-icon {
+            width: 80px;
+            height: 80px;
+            margin-bottom: 24px;
+            position: relative;
+            animation: rotate-phone 2.4s ease-in-out infinite;
+        }
+        .rotate-icon svg {
+            width: 100%;
+            height: 100%;
+            display: block;
+            fill: none;
+            stroke: #f5f0d3;
+            stroke-width: 3;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+        .rotate-icon .arrow {
+            stroke: #f5f0d3;
+            fill: #f5f0d3;
+        }
+        @keyframes rotate-phone {
+            0% { transform: rotate(0deg); }
+            20% { transform: rotate(0deg); }
+            40% { transform: rotate(90deg); }
+            60% { transform: rotate(90deg); }
+            80% { transform: rotate(0deg); }
+            100% { transform: rotate(0deg); }
+        }
+        .rotate-text {
+            font-size: 18px;
+            letter-spacing: 0.06em;
+            line-height: 1.6;
+            max-width: 280px;
+        }
+        .rotate-text small {
+            display: block;
+            font-size: 14px;
+            opacity: 0.7;
+            margin-top: 8px;
+        }
+        /* 原有样式 */
         .app {
             height: 100vh;
             width: 100vw;
@@ -104,7 +168,6 @@
             height: auto;
             touch-action: none;
             user-select: none;
-            /* 在横屏下自动拉伸，但保持比例 */
             max-height: 55vh;
             object-fit: contain;
         }
@@ -229,7 +292,6 @@
         }
         .rule {
             display: none;
-            /* 横屏下可能不需要规则文字，或缩小 */
         }
         .toast {
             position: fixed;
@@ -286,18 +348,11 @@
                 width: 100%;
                 height: auto;
             }
-            .right-panel {
-                flex: 1 1 25%;
-                display: flex;
-                flex-direction: column;
-                gap: 12px;
-                justify-content: center;
-                min-width: 140px;
-            }
             .controls {
+                flex: 1 1 25%;
                 grid-template-columns: 1fr 1fr;
                 gap: 8px;
-                width: 100%;
+                align-self: center;
             }
             .btn {
                 padding: 14px 6px;
@@ -331,16 +386,6 @@
                 margin-top: 5px;
                 flex: none;
             }
-            /* 将右侧面板包装 */
-            .right-panel {
-                flex: 1 1 25%;
-                display: flex;
-                flex-direction: column;
-                gap: 12px;
-                justify-content: center;
-                min-width: 140px;
-            }
-            /* 调整header里的标题大小 */
             .title {
                 font-size: 24px;
             }
@@ -349,7 +394,6 @@
             }
         }
 
-        /* 小屏横屏时进一步调整 */
         @media (orientation: landscape) and (max-height: 500px) {
             .board {
                 min-height: 40vh;
@@ -369,27 +413,29 @@
                 font-size: 11px;
             }
         }
-
-        /* 竖屏时，将右侧面板隐藏或调整？但保持原样，竖屏时不会有.right-panel，因为HTML中没有，我们将在横屏时动态插入？更简单：在横屏时通过flex布局调整，不额外添加元素，而是利用flex-order或改变布局。我们可以不添加新元素，而是用flex-wrap让controls和hint等自然排列。我们已经设置app flex-direction: row; 但原结构是header, board, controls, rule。我们可以将controls和rule放在一个容器？但不想改动HTML结构，可通过flex order调整。在横屏时，将board放在左侧，右侧放controls和hint等。然而原HTML中controls在board之后，使用flex-direction: row后，默认顺序为header, board, controls, rule。我们可以通过order调整。但更简单：保留原结构，使用flex-wrap，设置board flex: 2，controls flex: 1，并且让controls在右侧。但是因为board和controls是兄弟，flex-direction: row后，它们会并排。但header占一整行。所以我们只需调整board和controls的flex比例。现修改：在横屏时，.app的flex-direction改为row，flex-wrap: wrap; header占100%，board占flex: 2，controls占flex: 1，并且让controls垂直排列。但controls本身是grid，我们可保持grid但列数改为2。这已实现。但hint和task都在board内部，所以右侧只有controls，可能比较空。我们可以把hint移到右侧？但是为了简洁，我们保留原样，横屏时board变大，controls在右侧，体验也可以。
-
-        我们已经在横屏时设置了.board flex: 2 1 65%，.controls没有设置，但默认flex: 0 1 auto，可能宽度不够。需要给controls设置flex: 1 1 25%。另外，rule我们显示出来放在底部。为了更好的视觉，我们可以将controls和rule包裹在一个右侧容器，但为了不改变DOM，我们通过flex-wrap让它们自动换行，并利用order调整顺序。我们可以在横屏时让order: board=1, controls=2, rule=3等。但简单起见，我们可以让controls占右侧，并让rule在controls下方。但现在rule在controls之后，默认会在下一行，因为flex-wrap: wrap，它们会在下一行，但board占65%，controls占25%，rule可能也会占25%？但rule我们希望占满宽度，或者放在右侧下方。为了简单，我们保持原样，横屏时，app flex-direction: row， flex-wrap: wrap， header占100%， board占flex: 2，controls占flex: 1， rule占100%？这样rule会换行在下面。我们可以设置rule width: 100%; 这样它会在board和controls的下方独占一行。但board高度可能很高，rule在底部。可能更合理的是将rule放在board内部底部，但不想改动。
-
-        我们保持现状，因为用户主要关注游戏区域横屏显示，可能足够。
-
-        我们已经在横屏媒体查询中设置.app flex-direction: row; flex-wrap: wrap; header宽度100%，board flex: 2，controls flex: 1。但是我们需要确保controls不会太高，可设置align-self: center等。
-
-        另外，我们可能想让controls垂直居中，设置align-items: center。
-
-        调整好比例，保证游戏区占主要宽度。
-
-        由于没有右侧容器，controls可能宽度不足，但我们可以设置controls的min-width: 120px等。
-
-        我们已设定.right-panel，但HTML中没有，所以我们不使用。改用直接的flex布局。
-
-        最终我们修改CSS即可。
     </style>
 </head>
 <body>
+    <!-- 旋转提示遮罩 -->
+    <div class="rotate-overlay" id="rotateOverlay">
+        <div class="rotate-icon">
+            <svg viewBox="0 0 80 80">
+                <!-- 手机轮廓 -->
+                <rect x="20" y="10" width="40" height="60" rx="8" stroke="#f5f0d3" stroke-width="3" fill="none"/>
+                <rect x="35" y="56" width="10" height="2" rx="1" fill="#f5f0d3"/>
+                <!-- 旋转箭头 -->
+                <path d="M68 32 A30 30 0 0 0 12 32" stroke="#f5f0d3" stroke-width="3" fill="none"/>
+                <polygon points="68,32 62,26 62,38" fill="#f5f0d3"/>
+                <path d="M12 48 A30 30 0 0 0 68 48" stroke="#f5f0d3" stroke-width="3" fill="none"/>
+                <polygon points="12,48 18,42 18,54" fill="#f5f0d3"/>
+            </svg>
+        </div>
+        <div class="rotate-text">
+            请将设备横屏<br>
+            <small>旋转手机以继续游戏</small>
+        </div>
+    </div>
+
     <main class="app">
         <header>
             <div>
@@ -415,8 +461,42 @@
         </div>
     </main>
     <div class="toast" id="toast" role="status"></div>
+
     <script>
         (() => {
+            // ---------- 方向检测与遮罩控制 ----------
+            const overlay = document.getElementById('rotateOverlay');
+
+            function checkOrientation() {
+                const isLandscape = window.innerWidth > window.innerHeight;
+                if (isLandscape) {
+                    overlay.classList.add('hidden');
+                } else {
+                    overlay.classList.remove('hidden');
+                }
+            }
+
+            // 初始检测
+            checkOrientation();
+
+            // 监听窗口变化 (resize 和 orientationchange)
+            window.addEventListener('resize', checkOrientation);
+            window.addEventListener('orientationchange', () => {
+                // 某些设备 orientationchange 后尺寸可能未立即更新，延迟一点点
+                setTimeout(checkOrientation, 200);
+            });
+
+            // 也监听 matchMedia 作为备用
+            const portraitQuery = window.matchMedia('(orientation: portrait)');
+            portraitQuery.addEventListener('change', (e) => {
+                if (e.matches) {
+                    overlay.classList.remove('hidden');
+                } else {
+                    overlay.classList.add('hidden');
+                }
+            });
+
+            // ---------- 游戏逻辑 ----------
             const svg = document.getElementById('game'),
                 task = document.getElementById('task'),
                 hint = document.getElementById('hint'),
