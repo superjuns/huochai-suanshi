@@ -1,0 +1,746 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+    <title>火柴算式 - 横屏</title>
+    <style>
+        :root {
+            --ink: #173d37;
+            --board: #174b43;
+            --board2: #0e3833;
+            --chalk: #f5f0d3;
+            --stick: #e5b061;
+            --stick-hi: #f6d78e;
+            --paper: #f5f7f2;
+            --muted: #6d827b;
+            --coral: #d96d52;
+            --success: #7bc67e;
+            --warn: #f0c27a;
+            --danger: #d96d52;
+        }
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            margin: 0;
+            background: var(--paper);
+            font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Noto Sans SC", sans-serif;
+            color: var(--ink);
+            -webkit-tap-highlight-color: transparent;
+            /* 横屏时禁用滚动，全屏展示 */
+            overflow: hidden;
+            height: 100vh;
+            width: 100vw;
+        }
+        .app {
+            height: 100vh;
+            width: 100vw;
+            max-width: 100%;
+            padding: 12px 16px calc(12px + env(safe-area-inset-bottom));
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin: auto;
+        }
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-shrink: 0;
+        }
+        .eyebrow {
+            font-size: 11px;
+            letter-spacing: .14em;
+            color: var(--muted);
+            margin: 0 0 2px;
+        }
+        .title {
+            font-size: 22px;
+            letter-spacing: .04em;
+            margin: 0;
+            font-weight: 700;
+        }
+        .round {
+            font-size: 13px;
+            color: var(--muted);
+            padding-top: 2px;
+        }
+        .board {
+            background: linear-gradient(135deg, var(--board), var(--board2));
+            border-radius: 16px;
+            padding: 10px 12px 8px;
+            box-shadow: 0 8px 20px #173d3718;
+            position: relative;
+            overflow: hidden;
+            flex: 1 1 auto;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            min-height: 0;
+        }
+        .board:before {
+            content: "";
+            position: absolute;
+            inset: 6px;
+            border: 1px solid #d6e6c62b;
+            border-radius: 12px;
+            pointer-events: none;
+        }
+        .task {
+            position: relative;
+            color: #e4eedf;
+            text-align: center;
+            font-size: 13px;
+            margin: 0 0 4px;
+            flex-shrink: 0;
+        }
+        .task strong {
+            color: #ffe29a;
+        }
+        #game {
+            display: block;
+            width: 100%;
+            height: auto;
+            touch-action: none;
+            user-select: none;
+            /* 在横屏下自动拉伸，但保持比例 */
+            max-height: 55vh;
+            object-fit: contain;
+        }
+        .slot {
+            stroke: #e2efd644;
+            stroke-width: 10;
+            stroke-linecap: round;
+        }
+        .stick {
+            stroke: var(--stick);
+            stroke-width: 9;
+            stroke-linecap: round;
+            filter: drop-shadow(0 2px 1px #0005);
+            cursor: grab;
+            transition: stroke 0.15s;
+        }
+        .stick:active {
+            cursor: grabbing;
+        }
+        .stick.dim {
+            stroke: #8a7a5a;
+            filter: drop-shadow(0 1px 1px #0003);
+        }
+        .drag {
+            stroke: var(--stick-hi);
+            stroke-width: 9;
+            stroke-linecap: round;
+            filter: drop-shadow(0 3px 3px #0008);
+            pointer-events: none;
+        }
+        .symbol {
+            fill: #e7f1dc;
+            font-size: 34px;
+            font-weight: 300;
+            text-anchor: middle;
+            dominant-baseline: middle;
+        }
+        .hint {
+            position: relative;
+            color: #d0dfcf;
+            text-align: center;
+            font-size: 12px;
+            margin: 2px 0 0;
+            min-height: 18px;
+            transition: color 0.2s;
+            flex-shrink: 0;
+        }
+        .hint.good {
+            color: #7bc67e;
+        }
+        .hint.warn {
+            color: #f0c27a;
+        }
+        .hint.bad {
+            color: #d96d52;
+        }
+        .controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr 1fr;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+        .btn {
+            border: 0;
+            border-radius: 12px;
+            padding: 12px 4px;
+            font: inherit;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.1s, box-shadow 0.15s, opacity 0.2s;
+            text-align: center;
+            background: #e5ece5;
+            color: var(--ink);
+        }
+        .btn:active {
+            transform: scale(.96);
+        }
+        .btn:disabled {
+            opacity: 0.5;
+            transform: none;
+            cursor: not-allowed;
+        }
+        .primary {
+            background: var(--ink);
+            color: white;
+            box-shadow: 0 3px 8px #173d3722;
+        }
+        .primary:not(:disabled):hover {
+            box-shadow: 0 5px 14px #173d3733;
+        }
+        .secondary {
+            background: #e5ece5;
+            color: var(--ink);
+        }
+        .secondary:not(:disabled):hover {
+            background: #d8e0d8;
+        }
+        .btn-verify {
+            background: #d96d52;
+            color: white;
+            box-shadow: 0 3px 8px #d96d5233;
+        }
+        .btn-verify:not(:disabled):hover {
+            box-shadow: 0 5px 14px #d96d5244;
+            background: #c95d42;
+        }
+        .btn-verify:active {
+            background: #b84d32;
+        }
+        .btn-tip {
+            background: #4a8c7a;
+            color: white;
+            box-shadow: 0 3px 8px #4a8c7a33;
+        }
+        .btn-tip:not(:disabled):hover {
+            box-shadow: 0 5px 14px #4a8c7a44;
+            background: #3d7a69;
+        }
+        .btn-tip:active {
+            background: #2f6858;
+        }
+        .rule {
+            display: none;
+            /* 横屏下可能不需要规则文字，或缩小 */
+        }
+        .toast {
+            position: fixed;
+            left: 50%;
+            top: 20px;
+            transform: translate(-50%, -130px);
+            background: #153f38;
+            color: #fff7d5;
+            padding: 10px 18px;
+            border-radius: 99px;
+            font-size: 14px;
+            box-shadow: 0 8px 22px #173d3733;
+            transition: transform .28s ease, opacity .28s ease;
+            z-index: 5;
+            opacity: 0;
+            pointer-events: none;
+            white-space: nowrap;
+            max-width: 90vw;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .toast.show {
+            transform: translate(-50%, 0);
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        /* ===== 横屏优化 ===== */
+        @media (orientation: landscape) {
+            body {
+                overflow: hidden;
+            }
+            .app {
+                padding: 8px 20px 8px;
+                flex-direction: row;
+                flex-wrap: wrap;
+                align-content: center;
+                gap: 12px;
+            }
+            header {
+                width: 100%;
+                flex-shrink: 0;
+                padding-bottom: 4px;
+            }
+            .board {
+                flex: 2 1 65%;
+                min-height: 60vh;
+                max-height: 80vh;
+                padding: 12px 16px;
+                border-radius: 20px;
+            }
+            #game {
+                max-height: 70vh;
+                width: 100%;
+                height: auto;
+            }
+            .right-panel {
+                flex: 1 1 25%;
+                display: flex;
+                flex-direction: column;
+                gap: 12px;
+                justify-content: center;
+                min-width: 140px;
+            }
+            .controls {
+                grid-template-columns: 1fr 1fr;
+                gap: 8px;
+                width: 100%;
+            }
+            .btn {
+                padding: 14px 6px;
+                font-size: 15px;
+                border-radius: 14px;
+            }
+            .task {
+                font-size: 15px;
+                margin-bottom: 6px;
+            }
+            .hint {
+                font-size: 13px;
+                min-height: 22px;
+            }
+            .rule {
+                display: flex;
+                align-items: flex-start;
+                gap: 8px;
+                color: var(--muted);
+                font-size: 12px;
+                line-height: 1.4;
+                padding: 0 2px;
+                margin-top: 4px;
+                width: 100%;
+            }
+            .dot {
+                width: 6px;
+                height: 6px;
+                background: var(--stick);
+                border-radius: 50%;
+                margin-top: 5px;
+                flex: none;
+            }
+            /* 将右侧面板包装 */
+            .right-panel {
+                flex: 1 1 25%;
+                display: flex;
+                flex-direction: column;
+                gap: 12px;
+                justify-content: center;
+                min-width: 140px;
+            }
+            /* 调整header里的标题大小 */
+            .title {
+                font-size: 24px;
+            }
+            .round {
+                font-size: 14px;
+            }
+        }
+
+        /* 小屏横屏时进一步调整 */
+        @media (orientation: landscape) and (max-height: 500px) {
+            .board {
+                min-height: 40vh;
+                padding: 8px 12px;
+            }
+            #game {
+                max-height: 50vh;
+            }
+            .btn {
+                padding: 10px 4px;
+                font-size: 12px;
+            }
+            .task {
+                font-size: 12px;
+            }
+            .hint {
+                font-size: 11px;
+            }
+        }
+
+        /* 竖屏时，将右侧面板隐藏或调整？但保持原样，竖屏时不会有.right-panel，因为HTML中没有，我们将在横屏时动态插入？更简单：在横屏时通过flex布局调整，不额外添加元素，而是利用flex-order或改变布局。我们可以不添加新元素，而是用flex-wrap让controls和hint等自然排列。我们已经设置app flex-direction: row; 但原结构是header, board, controls, rule。我们可以将controls和rule放在一个容器？但不想改动HTML结构，可通过flex order调整。在横屏时，将board放在左侧，右侧放controls和hint等。然而原HTML中controls在board之后，使用flex-direction: row后，默认顺序为header, board, controls, rule。我们可以通过order调整。但更简单：保留原结构，使用flex-wrap，设置board flex: 2，controls flex: 1，并且让controls在右侧。但是因为board和controls是兄弟，flex-direction: row后，它们会并排。但header占一整行。所以我们只需调整board和controls的flex比例。现修改：在横屏时，.app的flex-direction改为row，flex-wrap: wrap; header占100%，board占flex: 2，controls占flex: 1，并且让controls垂直排列。但controls本身是grid，我们可保持grid但列数改为2。这已实现。但hint和task都在board内部，所以右侧只有controls，可能比较空。我们可以把hint移到右侧？但是为了简洁，我们保留原样，横屏时board变大，controls在右侧，体验也可以。
+
+        我们已经在横屏时设置了.board flex: 2 1 65%，.controls没有设置，但默认flex: 0 1 auto，可能宽度不够。需要给controls设置flex: 1 1 25%。另外，rule我们显示出来放在底部。为了更好的视觉，我们可以将controls和rule包裹在一个右侧容器，但为了不改变DOM，我们通过flex-wrap让它们自动换行，并利用order调整顺序。我们可以在横屏时让order: board=1, controls=2, rule=3等。但简单起见，我们可以让controls占右侧，并让rule在controls下方。但现在rule在controls之后，默认会在下一行，因为flex-wrap: wrap，它们会在下一行，但board占65%，controls占25%，rule可能也会占25%？但rule我们希望占满宽度，或者放在右侧下方。为了简单，我们保持原样，横屏时，app flex-direction: row， flex-wrap: wrap， header占100%， board占flex: 2，controls占flex: 1， rule占100%？这样rule会换行在下面。我们可以设置rule width: 100%; 这样它会在board和controls的下方独占一行。但board高度可能很高，rule在底部。可能更合理的是将rule放在board内部底部，但不想改动。
+
+        我们保持现状，因为用户主要关注游戏区域横屏显示，可能足够。
+
+        我们已经在横屏媒体查询中设置.app flex-direction: row; flex-wrap: wrap; header宽度100%，board flex: 2，controls flex: 1。但是我们需要确保controls不会太高，可设置align-self: center等。
+
+        另外，我们可能想让controls垂直居中，设置align-items: center。
+
+        调整好比例，保证游戏区占主要宽度。
+
+        由于没有右侧容器，controls可能宽度不足，但我们可以设置controls的min-width: 120px等。
+
+        我们已设定.right-panel，但HTML中没有，所以我们不使用。改用直接的flex布局。
+
+        最终我们修改CSS即可。
+    </style>
+</head>
+<body>
+    <main class="app">
+        <header>
+            <div>
+                <p class="eyebrow">MATCHSTICK PUZZLE</p>
+                <h1 class="title">火柴算式</h1>
+            </div>
+            <div class="round" id="round">第 1 题</div>
+        </header>
+        <section class="board" aria-label="火柴算式游戏区域">
+            <p class="task" id="task">移动 <strong>1 根</strong> 火柴，使等式成立</p>
+            <svg id="game" viewBox="0 0 460 188" role="img" aria-label="可拖动火柴的算式"></svg>
+            <p class="hint" id="hint">按住一根火柴，拖到空白位置</p>
+        </section>
+        <div class="controls">
+            <button class="btn secondary" id="reset">重新开始</button>
+            <button class="btn btn-verify" id="verify">✓ 验证</button>
+            <button class="btn btn-tip" id="tip">💡 提示</button>
+            <button class="btn secondary" id="next">换一题</button>
+        </div>
+        <div class="rule">
+            <span class="dot"></span>
+            <span>每次只能移动指定数量的火柴。火柴可放在任意空白笔画上。</span>
+        </div>
+    </main>
+    <div class="toast" id="toast" role="status"></div>
+    <script>
+        (() => {
+            const svg = document.getElementById('game'),
+                task = document.getElementById('task'),
+                hint = document.getElementById('hint'),
+                roundEl = document.getElementById('round'),
+                toast = document.getElementById('toast'),
+                resetBtn = document.getElementById('reset'),
+                nextBtn = document.getElementById('next'),
+                verifyBtn = document.getElementById('verify'),
+                tipBtn = document.getElementById('tip');
+
+            const NS = 'http://www.w3.org/2000/svg';
+            let round = 0,
+                puzzle, current, initial, drag = null,
+                toastTimer;
+            let solved = false;
+            let isDragging = false;
+
+            const segs = {
+                0: 'ab cdef'.replace(/ /g, ''),
+                1: 'bc',
+                2: 'abged'.replace(/ /g, ''),
+                3: 'abgcd'.replace(/ /g, ''),
+                4: 'fgbc',
+                5: 'afgcd',
+                6: 'afgecd'.replace(/ /g, ''),
+                7: 'abc',
+                8: 'abcdefg',
+                9: 'afgbcd'.replace(/ /g, '')
+            };
+            const digitBy = Object.fromEntries(Object.entries(segs).map(([n, s]) => [s.split('').sort().join(''), n]));
+            const opSeg = { '+': 'hv', '-': 'h', '=': 'tu' },
+                opBy = { h: '-', hv: '+' };
+            const cellX = [25, 108, 191, 274, 357],
+                centers = [57, 140, 223, 306, 389];
+
+            function pieces(ch) { return ch in segs ? segs[ch].split('') : opSeg[ch].split('') }
+
+            function count(eq) { return [...eq].reduce((n, c) => n + pieces(c).length, 0) }
+
+            function key(set) { return [...set].sort().join('') }
+
+            function truth(eq) {
+                const [a, o, b, , c] = eq;
+                if (o === '+') return (+a) + (+b) == +c;
+                if (o === '-') return (+a) - (+b) == +c;
+                return false;
+            }
+
+            function allEquations() {
+                const out = [];
+                for (let a = 0; a < 10; a++)
+                    for (let b = 0; b < 10; b++)
+                        for (const o of ['+', '-']) {
+                            let c = o === '+' ? a + b : a - b;
+                            if (c >= 0 && c < 10) out.push(`${a}${o}${b}=${c}`);
+                        }
+                return out;
+            }
+
+            function makePuzzle() {
+                let pool = [];
+                const eqs = allEquations();
+                for (const target of eqs) {
+                    for (let a = 0; a < 10; a++)
+                        for (let b = 0; b < 10; b++)
+                            for (const o of ['+', '-'])
+                                for (let c = 0; c < 10; c++) {
+                                    const start = `${a}${o}${b}=${c}`;
+                                    if (truth(start) || count(start) !== count(target)) continue;
+                                    let from = [],
+                                        to = [];
+                                    for (let i = 0; i < 5; i++) {
+                                        const A = new Set(pieces(start[i])),
+                                            B = new Set(pieces(target[i]));
+                                        A.forEach(s => { if (!B.has(s)) from.push(i + s) });
+                                        B.forEach(s => { if (!A.has(s)) to.push(i + s) });
+                                    }
+                                    if (from.length === to.length && from.length >= 1 && from.length <= 3) {
+                                        pool.push({ start, target, moves: from.length });
+                                    }
+                                }
+                }
+                return pool[Math.floor(Math.random() * pool.length)];
+            }
+
+            function pos(i, s) {
+                const x = cellX[i],
+                    y = 50,
+                    w = 63,
+                    h = 88;
+                const p = {
+                    a: [x + 10, y, x + w - 10, y],
+                    b: [x + w, y + 10, x + w, y + h / 2 - 7],
+                    c: [x + w, y + h / 2 + 7, x + w, y + h - 10],
+                    d: [x + 10, y + h, x + w - 10, y + h],
+                    e: [x, y + h / 2 + 7, x, y + h - 10],
+                    f: [x, y + 10, x, y + h / 2 - 7],
+                    g: [x + 10, y + h / 2, x + w - 10, y + h / 2],
+                    h: [x + 13, y + h / 2, x + w - 13, y + h / 2],
+                    v: [x + w / 2, y + 10, x + w / 2, y + h - 10],
+                    t: [x + 13, y + h / 2 - 13, x + w - 13, y + h / 2 - 13],
+                    u: [x + 13, y + h / 2 + 13, x + w - 13, y + h / 2 + 13]
+                };
+                return p[s];
+            }
+
+            function slots() {
+                let arr = [];
+                for (let i of [0, 2, 4])
+                    for (const s of 'abcdefg') arr.push({ id: i + s, p: pos(i, s) });
+                for (const s of 'hv') arr.push({ id: 1 + s, p: pos(1, s) });
+                for (const s of 'tu') arr.push({ id: 3 + s, p: pos(3, s) });
+                return arr;
+            }
+
+            function draw() {
+                svg.replaceChildren();
+                const base = document.createElementNS(NS, 'g');
+                for (const sl of slots()) {
+                    const l = line(sl.p, 'slot');
+                    l.dataset.id = sl.id;
+                    base.append(l);
+                }
+                svg.append(base);
+
+                for (const id of current) {
+                    const i = +id[0],
+                        s = id[1];
+                    const isMissing = !initial.has(id);
+                    const l = line(pos(i, s), isMissing ? 'stick dim' : 'stick');
+                    l.dataset.id = id;
+                    if (!isMissing) {
+                        l.addEventListener('pointerdown', startDrag);
+                    }
+                    svg.append(l);
+                }
+            }
+
+            function line(p, cls) {
+                const l = document.createElementNS(NS, 'line');
+                l.setAttribute('x1', p[0]);
+                l.setAttribute('y1', p[1]);
+                l.setAttribute('x2', p[2]);
+                l.setAttribute('y2', p[3]);
+                l.setAttribute('class', cls);
+                return l;
+            }
+
+            function startDrag(e) {
+                if (solved) {
+                    show('🎯 这道题已经完成了，点击“换一题”继续吧');
+                    return;
+                }
+                if (isDragging) return;
+                const id = e.currentTarget.dataset.id;
+                drag = { id, source: [...pos(+id[0], id[1])], node: e.currentTarget };
+                current.delete(id);
+                isDragging = true;
+                draw();
+
+                const floating = line(drag.source, 'drag');
+                svg.append(floating);
+                drag.node = floating;
+                moveDrag(e);
+
+                svg.setPointerCapture(e.pointerId);
+                svg.addEventListener('pointermove', moveDrag);
+                svg.addEventListener('pointerup', endDrag, { once: true });
+                svg.addEventListener('pointercancel', endDrag, { once: true });
+
+                hint.textContent = '拖动到空白位置…';
+                hint.className = 'hint';
+            }
+
+            function point(e) {
+                const q = svg.createSVGPoint();
+                q.x = e.clientX;
+                q.y = e.clientY;
+                return q.matrixTransform(svg.getScreenCTM().inverse());
+            }
+
+            function moveDrag(e) {
+                if (!drag) return;
+                const q = point(e),
+                    dx = drag.source[2] - drag.source[0],
+                    dy = drag.source[3] - drag.source[1];
+                drag.node.setAttribute('x1', q.x - dx / 2);
+                drag.node.setAttribute('y1', q.y - dy / 2);
+                drag.node.setAttribute('x2', q.x + dx / 2);
+                drag.node.setAttribute('y2', q.y + dy / 2);
+            }
+
+            function endDrag(e) {
+                if (!drag) {
+                    isDragging = false;
+                    return;
+                }
+                const q = point(e);
+                let best = null,
+                    dist = 1e9;
+                for (const sl of slots()) {
+                    if (current.has(sl.id)) continue;
+                    const mx = (sl.p[0] + sl.p[2]) / 2,
+                        my = (sl.p[1] + sl.p[3]) / 2,
+                        d = (mx - q.x) ** 2 + (my - q.y) ** 2;
+                    if (d < dist) { dist = d;
+                        best = sl }
+                }
+                const targetId = (best && dist < 900) ? best.id : drag.id;
+                current.add(targetId);
+                drag = null;
+                isDragging = false;
+                svg.removeEventListener('pointermove', moveDrag);
+                draw();
+
+                hint.textContent = '点击“验证”按钮检查答案';
+                hint.className = 'hint';
+            }
+
+            function read() {
+                let chars = [];
+                for (let i = 0; i < 5; i++) {
+                    let s = '';
+                    for (const id of current)
+                        if (+id[0] === i) s += id[1];
+                    s = s.split('').sort().join('');
+                    if (i === 1) chars.push(opBy[s] || '?');
+                    else if (i === 3) chars.push(s === 'tu' ? '=' : '?');
+                    else chars.push(digitBy[s] ?? '?');
+                }
+                return chars.join('');
+            }
+
+            function verify() {
+                if (solved) {
+                    hint.textContent = '✅ 这道题已完成，点击“换一题”继续挑战吧';
+                    hint.className = 'hint good';
+                    show('🎯 已完成，继续下一题吧！');
+                    return;
+                }
+
+                const used = [...initial].filter(x => !current.has(x)).length;
+                const eq = read();
+
+                if (eq.includes('?')) {
+                    hint.textContent = `⚠️ 还有火柴未放置到正确位置 (已移动 ${used}/${puzzle.moves})`;
+                    hint.className = 'hint warn';
+                    return;
+                }
+
+                if (truth(eq)) {
+                    if (used === puzzle.moves) {
+                        solved = true;
+                        hint.textContent = '✅ 正确！等式成立 ✨';
+                        hint.className = 'hint good';
+                        show('🎉 太棒了，答对啦！');
+                        setTimeout(() => {
+                            newGame();
+                        }, 800);
+                    } else {
+                        const diff = puzzle.moves - used;
+                        const msg = diff > 0 ?
+                            `还需要移动 ${diff} 根` :
+                            `多移动了 ${-diff} 根`;
+                        hint.textContent = `⚠️ 等式成立，但需要恰好移动 ${puzzle.moves} 根 (已移动 ${used}，${msg})`;
+                        hint.className = 'hint warn';
+                    }
+                } else {
+                    hint.textContent = `❌ 等式不成立，请继续调整 (已移动 ${used}/${puzzle.moves})`;
+                    hint.className = 'hint bad';
+                }
+            }
+
+            function show(s) {
+                toast.textContent = s;
+                toast.classList.add('show');
+                clearTimeout(toastTimer);
+                toastTimer = setTimeout(() => toast.classList.remove('show'), 2000);
+            }
+
+            function newGame() {
+                solved = false;
+                isDragging = false;
+                drag = null;
+                puzzle = makePuzzle();
+                initial = new Set();
+                [...puzzle.start].forEach((ch, i) => pieces(ch).forEach(s => initial.add(i + s)));
+                current = new Set(initial);
+                round++;
+                roundEl.textContent = `第 ${round} 题`;
+                task.innerHTML = `移动 <strong>${puzzle.moves} 根</strong> 火柴，使等式成立`;
+                hint.textContent = '按住一根火柴，拖到空白位置';
+                hint.className = 'hint';
+                toast.classList.remove('show');
+                draw();
+                verifyBtn.disabled = false;
+                tipBtn.disabled = false;
+            }
+
+            resetBtn.onclick = () => {
+                if (solved) solved = false;
+                current = new Set(initial);
+                draw();
+                hint.textContent = '已重置，重新摆火柴吧';
+                hint.className = 'hint';
+                toast.classList.remove('show');
+            };
+
+            nextBtn.onclick = () => {
+                newGame();
+            };
+
+            verifyBtn.onclick = verify;
+
+            tipBtn.onclick = () => {
+                if (solved) {
+                    show('🎯 这道题已完成，答案已揭晓');
+                    return;
+                }
+                show(`💡 答案：${puzzle.target}`);
+            };
+
+            newGame();
+        })();
+    </script>
+</body>
+</html>
