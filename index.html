@@ -334,7 +334,19 @@
             header {
                 width: 100%;
                 flex-shrink: 0;
-                padding-bottom: 4px;
+                padding-bottom: 2px;
+                gap: 8px;
+            }
+            header > div:first-child {
+                flex: 0 0 auto;
+                min-width: 0;
+            }
+            .challenge-bar {
+                flex: 1 1 auto;
+                justify-content: flex-end;
+                gap: 6px;
+                flex-wrap: nowrap;
+                overflow: hidden;
             }
             .board {
                 flex: 2 1 65%;
@@ -387,10 +399,35 @@
                 flex: none;
             }
             .title {
-                font-size: 24px;
+                font-size: 18px;
+                white-space: nowrap;
+            }
+            .eyebrow {
+                font-size: 9px;
             }
             .round {
-                font-size: 14px;
+                font-size: 12px;
+                white-space: nowrap;
+            }
+            .btn-challenge {
+                padding: 5px 10px;
+                font-size: 12px;
+                white-space: nowrap;
+                flex-shrink: 0;
+            }
+            .timer-box {
+                font-size: 12px;
+                padding: 3px 8px;
+                white-space: nowrap;
+                flex-shrink: 0;
+            }
+            .user-badge {
+                font-size: 11px;
+                padding: 2px 8px;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                max-width: 100px;
             }
         }
 
