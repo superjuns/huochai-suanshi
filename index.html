@@ -28,6 +28,8 @@
             font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Noto Sans SC", sans-serif;
             color: var(--ink);
             -webkit-tap-highlight-color: transparent;
+            -webkit-user-select: none;
+            user-select: none;
             overflow: hidden;
             height: 100vh;
             width: 100vw;
@@ -322,7 +324,9 @@
         /* ===== 横屏优化 ===== */
         @media (orientation: landscape) {
             body {
-                overflow: hidden;
+                overflow-y: auto;
+                height: auto;
+                min-height: 100vh;
             }
             .app {
                 padding: 6px 16px 6px;
@@ -331,6 +335,8 @@
                 align-content: flex-start;
                 align-items: flex-start;
                 gap: 8px;
+                height: auto;
+                min-height: 100vh;
             }
             header {
                 width: 100%;
