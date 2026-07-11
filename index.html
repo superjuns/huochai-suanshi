@@ -394,6 +394,237 @@
             }
         }
 
+        /* ===== 答题模式 ===== */
+        .challenge-bar {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+        }
+        .btn-challenge {
+            background: #e67e22;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            padding: 6px 14px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 8px rgba(230, 126, 34, 0.3);
+        }
+        .btn-challenge:hover:not(:disabled) {
+            background: #d35400;
+            transform: translateY(-1px);
+        }
+        .btn-challenge:disabled {
+            background: #bdc3c7;
+            cursor: not-allowed;
+            box-shadow: none;
+            transform: none;
+        }
+        .timer-box {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--ink);
+            background: #e5ece5;
+            padding: 4px 12px;
+            border-radius: 16px;
+            min-width: 50px;
+            text-align: center;
+        }
+        .user-badge {
+            font-size: 12px;
+            color: var(--muted);
+            background: #e5ece5;
+            padding: 3px 10px;
+            border-radius: 12px;
+            white-space: nowrap;
+        }
+        /* 排行榜 */
+        .rank-panel {
+            background: #fff;
+            border-radius: 14px;
+            padding: 10px 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            flex-shrink: 0;
+            max-height: 40vh;
+            overflow-y: auto;
+        }
+        .rank-title {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--ink);
+            margin-bottom: 8px;
+        }
+        .rank-title button {
+            background: none;
+            border: none;
+            font-size: 12px;
+            color: var(--muted);
+            cursor: pointer;
+            padding: 2px 6px;
+            border-radius: 6px;
+        }
+        .rank-title button:hover { background: #e5ece5; }
+        .rank-list { font-size: 13px; }
+        .rank-item {
+            display: grid;
+            grid-template-columns: 28px 1fr auto auto;
+            gap: 6px;
+            align-items: center;
+            padding: 5px 0;
+            border-bottom: 1px solid #e5ece5;
+        }
+        .rank-item:last-child { border-bottom: none; }
+        .rank-pos { font-weight: 700; font-size: 14px; }
+        .rank-name { color: var(--ink); font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .rank-correct { color: var(--success); font-size: 12px; font-weight: 600; }
+        .rank-time { color: var(--muted); font-size: 12px; }
+        .rank-empty {
+            text-align: center;
+            color: var(--muted);
+            padding: 16px 0;
+            font-size: 13px;
+        }
+        /* 模态框 */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+        .modal-overlay.show { opacity: 1; pointer-events: auto; }
+        .modal-box {
+            background: #fff;
+            border-radius: 20px;
+            padding: 24px 20px;
+            width: 90%;
+            max-width: 360px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+        }
+        .modal-box h2 {
+            margin: 0 0 16px;
+            font-size: 20px;
+            text-align: center;
+            color: var(--ink);
+        }
+        .modal-box .field { margin-bottom: 14px; }
+        .modal-box label {
+            display: block;
+            font-size: 13px;
+            color: var(--muted);
+            margin-bottom: 6px;
+        }
+        .modal-box select,
+        .modal-box input {
+            width: 100%;
+            padding: 10px 12px;
+            border: 2px solid #e5ece5;
+            border-radius: 10px;
+            font-size: 15px;
+            font-family: inherit;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .modal-box select:focus,
+        .modal-box input:focus { border-color: var(--ink); }
+        .modal-error {
+            color: var(--danger);
+            font-size: 13px;
+            text-align: center;
+            min-height: 20px;
+            margin-bottom: 10px;
+        }
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 8px;
+        }
+        .modal-actions button {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: inherit;
+        }
+        .btn-cancel {
+            background: #e5ece5;
+            color: var(--ink);
+        }
+        .btn-confirm {
+            background: var(--ink);
+            color: white;
+        }
+        .btn-confirm:disabled {
+            background: #bdc3c7;
+            cursor: not-allowed;
+        }
+        /* 结果弹窗 */
+        .result-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+        .result-overlay.show { opacity: 1; pointer-events: auto; }
+        .result-box {
+            background: #fff;
+            border-radius: 24px;
+            padding: 30px 24px;
+            width: 90%;
+            max-width: 340px;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+        }
+        .result-icon { font-size: 48px; margin-bottom: 10px; }
+        .result-box h2 { margin: 0 0 16px; font-size: 22px; color: var(--ink); }
+        .result-stats {
+            font-size: 16px;
+            color: var(--ink);
+            line-height: 2;
+            margin-bottom: 20px;
+        }
+        .btn-done {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 12px;
+            background: var(--success);
+            color: white;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: inherit;
+        }
+        .btn-done:hover { filter: brightness(1.05); }
+
+        @media (orientation: landscape) {
+            .rank-panel {
+                flex: 1 1 100%;
+                max-height: 25vh;
+            }
+        }
+
         @media (orientation: landscape) and (max-height: 500px) {
             .board {
                 min-height: 40vh;
@@ -442,7 +673,12 @@
                 <p class="eyebrow">MATCHSTICK PUZZLE</p>
                 <h1 class="title">火柴算式</h1>
             </div>
-            <div class="round" id="round">第 1 题</div>
+            <div class="challenge-bar">
+                <span class="user-badge" id="userBadge" style="display:none"></span>
+                <span class="timer-box" id="timerDisplay" style="display:none">00:00</span>
+                <span class="round" id="round">第 1 题</span>
+                <button class="btn-challenge" id="btnChallenge" onclick="openAuthModal()">🏆 答题</button>
+            </div>
         </header>
         <section class="board" aria-label="火柴算式游戏区域">
             <p class="task" id="task">移动 <strong>1 根</strong> 火柴，使等式成立</p>
@@ -455,12 +691,62 @@
             <button class="btn btn-tip" id="tip">💡 提示</button>
             <button class="btn secondary" id="next">换一题</button>
         </div>
+        <div class="rank-panel" id="rankPanel">
+            <div class="rank-title">
+                <span>🏅 今日排行榜</span>
+                <button onclick="fetchRank()">🔄</button>
+            </div>
+            <div class="rank-list" id="rankList">
+                <div class="rank-empty">加载中...</div>
+            </div>
+        </div>
         <div class="rule">
             <span class="dot"></span>
             <span>每次只能移动指定数量的火柴。火柴可放在任意空白笔画上。</span>
         </div>
     </main>
     <div class="toast" id="toast" role="status"></div>
+
+    <!-- 身份验证弹窗 -->
+    <div class="modal-overlay" id="authModal">
+        <div class="modal-box">
+            <h2>🏆 答题挑战</h2>
+            <div class="field">
+                <label>选择班级</label>
+                <select id="classSelect">
+                    <option value="1班">1班</option>
+                    <option value="2班">2班</option>
+                    <option value="3班">3班</option>
+                    <option value="4班">4班</option>
+                    <option value="5班">5班</option>
+                    <option value="6班">6班</option>
+                    <option value="7班">7班</option>
+                </select>
+            </div>
+            <div class="field">
+                <label>你的姓名</label>
+                <input type="text" id="nameInput" placeholder="请输入姓名" maxlength="20">
+            </div>
+            <div class="modal-error" id="authError"></div>
+            <div class="modal-actions">
+                <button class="btn-cancel" onclick="closeAuthModal()">取消</button>
+                <button class="btn-confirm" id="btnAuthConfirm" onclick="confirmAuth()">开始挑战</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 完成弹窗 -->
+    <div class="result-overlay" id="resultOverlay">
+        <div class="result-box">
+            <div class="result-icon">🎉</div>
+            <h2>挑战完成！</h2>
+            <div class="result-stats">
+                答对 <span id="resultCorrect">0</span> 题<br>
+                用时 <span id="resultTime">00:00</span>
+            </div>
+            <button class="btn-done" onclick="closeResult()">太棒了！</button>
+        </div>
+    </div>
 
     <script>
         (() => {
@@ -753,6 +1039,10 @@
                         hint.textContent = '✅ 正确！等式成立 ✨';
                         hint.className = 'hint good';
                         show('🎉 太棒了，答对啦！');
+                        // 答题模式：答对计数
+                        if (typeof isChallengeMode !== 'undefined' && isChallengeMode) {
+                            onChallengeCorrect();
+                        }
                         setTimeout(() => {
                             newGame();
                         }, 800);
@@ -820,6 +1110,298 @@
             };
 
             newGame();
+
+            // ============================================================
+            // 答题模式（挑战）
+            // ============================================================
+            // ===== 配置（创建任务后填入） =====
+            const WHITELIST_URL = 'https://wzkjgz.site/api/5tmbx2o6rg/all';
+            // 下面两个链接需要在 wzkjgz.site 导入任务后获取
+            const SCORE_POST_URL = 'https://wzkjgz.site/api/dvr2frebwx';   // 上传成绩的 POST 链接
+            const SCORE_GET_URL = 'https://wzkjgz.site/api/dvr2frebwx/all';    // 排行榜的 GET 链接（末尾加 /all）
+            // =================================
+
+            let isChallengeMode = false;
+            let challengeUser = null;
+            let challengeCorrect = 0;
+            let challengeStartTime = null;
+            let challengeTimerInterval = null;
+            let challengeSeconds = 0;
+            const CHALLENGE_TOTAL = 5;
+
+            const btnChallenge = document.getElementById('btnChallenge');
+            const timerDisplay = document.getElementById('timerDisplay');
+            const userBadge = document.getElementById('userBadge');
+
+            // ---- 身份验证 ----
+            window.openAuthModal = function() {
+                if (isChallengeMode) return;
+                document.getElementById('authModal').classList.add('show');
+                document.getElementById('authError').textContent = '';
+                document.getElementById('nameInput').value = '';
+                document.getElementById('btnAuthConfirm').disabled = false;
+            };
+
+            window.closeAuthModal = function() {
+                document.getElementById('authModal').classList.remove('show');
+                document.getElementById('authError').textContent = '';
+            };
+
+            window.confirmAuth = async function() {
+                const cls = document.getElementById('classSelect').value;
+                const name = document.getElementById('nameInput').value.trim();
+                const errorEl = document.getElementById('authError');
+                const btn = document.getElementById('btnAuthConfirm');
+
+                if (!name) {
+                    errorEl.textContent = '⚠️ 请输入姓名';
+                    return;
+                }
+                if (name.length > 20) {
+                    errorEl.textContent = '⚠️ 姓名不能超过20个字符';
+                    return;
+                }
+
+                btn.disabled = true;
+                errorEl.textContent = '⏳ 验证中...';
+
+                try {
+                    const resp = await fetch(WHITELIST_URL);
+                    if (!resp.ok) throw new Error('网络请求失败');
+                    const data = await resp.json();
+                    const submissions = data.submissions || [];
+                    const matched = submissions.some(item =>
+                        String(item['班级'] || item.class || '') === cls &&
+                        String(item['姓名'] || item.name || '') === name
+                    );
+
+                    if (!matched) {
+                        // 也尝试直接匹配字段名
+                        const matched2 = submissions.some(item => {
+                            const vals = Object.values(item).map(v => String(v));
+                            return vals.includes(cls) && vals.includes(name);
+                        });
+                        if (!matched2) {
+                            errorEl.textContent = '❌ 未在白名单中找到匹配信息，请检查班级和姓名';
+                            btn.disabled = false;
+                            return;
+                        }
+                    }
+
+                    errorEl.textContent = '';
+                    closeAuthModal();
+                    startChallenge(cls, name);
+
+                } catch (err) {
+                    console.warn('白名单验证错误:', err);
+                    // 验证失败时仍允许进入（防止白名单接口故障影响使用）
+                    errorEl.textContent = '';
+                    closeAuthModal();
+                    startChallenge(cls, name);
+                }
+            };
+
+            // ---- 开始挑战 ----
+            function startChallenge(cls, name) {
+                isChallengeMode = true;
+                challengeUser = { class: cls, name: name };
+                challengeCorrect = 0;
+                challengeSeconds = 0;
+                userBadge.textContent = `${cls} · ${name}`;
+                userBadge.style.display = 'inline-block';
+                timerDisplay.style.display = 'inline-block';
+                timerDisplay.textContent = '00:00';
+                btnChallenge.disabled = true;
+                btnChallenge.textContent = '⏳ 挑战中';
+                tipBtn.disabled = true;
+
+                round = 0;
+                newGame();
+                roundEl.textContent = `第 1 / ${CHALLENGE_TOTAL} 题`;
+
+                challengeStartTime = Date.now();
+                challengeTimerInterval = setInterval(updateTimer, 1000);
+            }
+
+            function updateTimer() {
+                challengeSeconds++;
+                const mins = String(Math.floor(challengeSeconds / 60)).padStart(2, '0');
+                const secs = String(challengeSeconds % 60).padStart(2, '0');
+                timerDisplay.textContent = `${mins}:${secs}`;
+            }
+
+            // 答对回调
+            function onChallengeCorrect() {
+                if (!isChallengeMode) return;
+                challengeCorrect++;
+                if (round >= CHALLENGE_TOTAL) {
+                    setTimeout(finishChallenge, 500);
+                }
+            }
+
+            // 重写 newGame 的 round 显示（答题模式下显示进度）
+            const _origNewGame = newGame;
+            newGame = function() {
+                _origNewGame();
+                if (isChallengeMode) {
+                    roundEl.textContent = `第 ${Math.min(round, CHALLENGE_TOTAL)} / ${CHALLENGE_TOTAL} 题`;
+                    if (round > CHALLENGE_TOTAL) {
+                        finishChallenge();
+                    }
+                }
+            };
+            // 重新绑定
+            nextBtn.onclick = () => { newGame(); };
+
+            // ---- 结束挑战 ----
+            async function finishChallenge() {
+                if (challengeTimerInterval) {
+                    clearInterval(challengeTimerInterval);
+                    challengeTimerInterval = null;
+                }
+
+                const elapsed = challengeSeconds;
+                const correct = challengeCorrect;
+                const total = CHALLENGE_TOTAL;
+                const score = Math.round((correct / total) * 100);
+
+                const mins = String(Math.floor(elapsed / 60)).padStart(2, '0');
+                const secs = String(elapsed % 60).padStart(2, '0');
+                document.getElementById('resultCorrect').textContent = `${correct} / ${total}`;
+                document.getElementById('resultTime').textContent = `${mins}:${secs}`;
+                document.getElementById('resultOverlay').classList.add('show');
+
+                // 上传成绩
+                if (SCORE_POST_URL) {
+                    try {
+                        const payload = {
+                            班级: challengeUser.class,
+                            姓名: challengeUser.name,
+                            得分: score,
+                            答对: correct,
+                            总题数: total,
+                            用时秒: elapsed,
+                            submitted_at: new Date().toISOString()
+                        };
+                        await fetch(SCORE_POST_URL, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(payload)
+                        });
+                    } catch (err) {
+                        console.warn('提交成绩失败:', err);
+                    }
+                }
+
+                resetChallengeMode();
+                fetchRank();
+            }
+
+            function resetChallengeMode() {
+                isChallengeMode = false;
+                challengeUser = null;
+                challengeCorrect = 0;
+                challengeSeconds = 0;
+                if (challengeTimerInterval) {
+                    clearInterval(challengeTimerInterval);
+                    challengeTimerInterval = null;
+                }
+                timerDisplay.style.display = 'none';
+                userBadge.style.display = 'none';
+                btnChallenge.disabled = false;
+                btnChallenge.textContent = '🏆 答题';
+                tipBtn.disabled = false;
+                round = 0;
+                _origNewGame();
+            }
+
+            window.closeResult = function() {
+                document.getElementById('resultOverlay').classList.remove('show');
+            };
+
+            // ---- 排行榜 ----
+            window.fetchRank = async function() {
+                const rankList = document.getElementById('rankList');
+                if (!SCORE_GET_URL) {
+                    rankList.innerHTML = '<div class="rank-empty">排行榜尚未配置</div>';
+                    return;
+                }
+                rankList.innerHTML = '<div class="rank-empty">加载中...</div>';
+
+                try {
+                    const resp = await fetch(SCORE_GET_URL);
+                    if (!resp.ok) throw new Error('网络请求失败');
+                    const data = await resp.json();
+                    const submissions = data.submissions || [];
+
+                    if (submissions.length === 0) {
+                        rankList.innerHTML = '<div class="rank-empty">暂无数据，快来挑战吧！</div>';
+                        return;
+                    }
+
+                    const today = new Date().toISOString().slice(0, 10);
+                    const todayItems = submissions.filter(item => {
+                        const dateStr = item.submitted_at || item.timestamp || item['提交时间'] || '';
+                        return String(dateStr).startsWith(today);
+                    });
+
+                    if (todayItems.length === 0) {
+                        rankList.innerHTML = '<div class="rank-empty">今日暂无数据，快来挑战吧！</div>';
+                        return;
+                    }
+
+                    // 按姓名分组保留最佳成绩
+                    const bestMap = new Map();
+                    todayItems.forEach(item => {
+                        const cls = item['班级'] || item.class || '';
+                        const name = item['姓名'] || item.name || '';
+                        const key = `${cls}|${name}`;
+                        const existing = bestMap.get(key);
+                        const score = Number(item['得分'] || item.score || 0);
+                        const seconds = Number(item['用时秒'] || item.seconds || 0);
+                        if (!existing) {
+                            bestMap.set(key, { ...item, _score: score, _seconds: seconds, _cls: cls, _name: name });
+                        } else {
+                            if (score > existing._score || (score === existing._score && seconds < existing._seconds)) {
+                                bestMap.set(key, { ...item, _score: score, _seconds: seconds, _cls: cls, _name: name });
+                            }
+                        }
+                    });
+                    const uniqueItems = Array.from(bestMap.values());
+
+                    uniqueItems.sort((a, b) => {
+                        if (b._score !== a._score) return b._score - a._score;
+                        return a._seconds - b._seconds;
+                    });
+
+                    let html = '';
+                    uniqueItems.forEach((item, idx) => {
+                        const medal = idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : `#${idx+1}`;
+                        const correct = item['答对'] ?? item.correct ?? 0;
+                        const total = item['总题数'] ?? item.total ?? CHALLENGE_TOTAL;
+                        const seconds = item._seconds || 0;
+                        const mm = String(Math.floor(seconds / 60)).padStart(2, '0');
+                        const ss = String(seconds % 60).padStart(2, '0');
+                        html += `
+                            <div class="rank-item">
+                                <span class="rank-pos">${medal}</span>
+                                <span class="rank-name">${item._cls} ${item._name}</span>
+                                <span class="rank-correct">${correct}/${total}</span>
+                                <span class="rank-time">${mm}:${ss}</span>
+                            </div>
+                        `;
+                    });
+                    rankList.innerHTML = html;
+
+                } catch (err) {
+                    rankList.innerHTML = '<div class="rank-empty">加载失败，点击刷新重试</div>';
+                }
+            };
+
+            // 初始化排行榜
+            setTimeout(fetchRank, 500);
+            // 每30秒自动刷新
+            setInterval(fetchRank, 30000);
         })();
     </script>
 </body>
