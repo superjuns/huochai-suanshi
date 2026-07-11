@@ -741,7 +741,7 @@
             <div class="result-icon">🎉</div>
             <h2>挑战完成！</h2>
             <div class="result-stats">
-                答对 <span id="resultCorrect">0</span> 题<br>
+                闯关 <span id="resultCorrect">0</span> 关<br>
                 用时 <span id="resultTime">00:00</span>
             </div>
             <button class="btn-done" onclick="closeResult()">太棒了！</button>
@@ -1106,6 +1106,10 @@
                     show('🎯 这道题已完成，答案已揭晓');
                     return;
                 }
+                if (typeof isChallengeMode !== 'undefined' && isChallengeMode) {
+                    currentHintUsed = true;
+                    show('💡 已使用提示，本题不算闯关');
+                }
                 show(`💡 答案：${puzzle.target}`);
             };
 
@@ -1123,11 +1127,11 @@
 
             let isChallengeMode = false;
             let challengeUser = null;
-            let challengeCorrect = 0;
-            let challengeStartTime = null;
+            let challengePassed = 0;  // 闯关数（答对且未使用提示）
+            let challengeRemaining = 0; // 剩余秒数（倒计时）
+            let currentHintUsed = false; // 当前题是否使用了提示
             let challengeTimerInterval = null;
-            let challengeSeconds = 0;
-            const CHALLENGE_TOTAL = 5;
+            const CHALLENGE_TIME = 600; // 10分钟 = 600秒
 
             const btnChallenge = document.getElementById('btnChallenge');
             const timerDisplay = document.getElementById('timerDisplay');
@@ -1205,49 +1209,50 @@
             function startChallenge(cls, name) {
                 isChallengeMode = true;
                 challengeUser = { class: cls, name: name };
-                challengeCorrect = 0;
-                challengeSeconds = 0;
+                challengePassed = 0;
+                challengeRemaining = CHALLENGE_TIME;
+                currentHintUsed = false;
                 userBadge.textContent = `${cls} · ${name}`;
                 userBadge.style.display = 'inline-block';
                 timerDisplay.style.display = 'inline-block';
-                timerDisplay.textContent = '00:00';
+                timerDisplay.textContent = '10:00';
                 btnChallenge.disabled = true;
                 btnChallenge.textContent = '⏳ 挑战中';
-                tipBtn.disabled = true;
+                tipBtn.disabled = false;
 
                 round = 0;
                 newGame();
-                roundEl.textContent = `第 1 / ${CHALLENGE_TOTAL} 题`;
+                roundEl.textContent = `已闯 0 关`;
 
-                challengeStartTime = Date.now();
                 challengeTimerInterval = setInterval(updateTimer, 1000);
             }
 
             function updateTimer() {
-                challengeSeconds++;
-                const mins = String(Math.floor(challengeSeconds / 60)).padStart(2, '0');
-                const secs = String(challengeSeconds % 60).padStart(2, '0');
+                challengeRemaining--;
+                const mins = String(Math.floor(challengeRemaining / 60)).padStart(2, '0');
+                const secs = String(challengeRemaining % 60).padStart(2, '0');
                 timerDisplay.textContent = `${mins}:${secs}`;
+                if (challengeRemaining <= 0) {
+                    finishChallenge();
+                }
             }
 
             // 答对回调
             function onChallengeCorrect() {
                 if (!isChallengeMode) return;
-                challengeCorrect++;
-                if (round >= CHALLENGE_TOTAL) {
-                    setTimeout(finishChallenge, 500);
+                if (!currentHintUsed) {
+                    challengePassed++;
                 }
+                roundEl.textContent = `已闯 ${challengePassed} 关`;
             }
 
-            // 重写 newGame 的 round 显示（答题模式下显示进度）
+            // 重写 newGame 的 round 显示（答题模式下显示闯关数）
             const _origNewGame = newGame;
             newGame = function() {
                 _origNewGame();
+                currentHintUsed = false;
                 if (isChallengeMode) {
-                    roundEl.textContent = `第 ${Math.min(round, CHALLENGE_TOTAL)} / ${CHALLENGE_TOTAL} 题`;
-                    if (round > CHALLENGE_TOTAL) {
-                        finishChallenge();
-                    }
+                    roundEl.textContent = `已闯 ${challengePassed} 关`;
                 }
             };
             // 重新绑定
@@ -1260,14 +1265,12 @@
                     challengeTimerInterval = null;
                 }
 
-                const elapsed = challengeSeconds;
-                const correct = challengeCorrect;
-                const total = CHALLENGE_TOTAL;
-                const score = Math.round((correct / total) * 100);
+                const elapsed = CHALLENGE_TIME - challengeRemaining;
+                const passed = challengePassed;
 
                 const mins = String(Math.floor(elapsed / 60)).padStart(2, '0');
                 const secs = String(elapsed % 60).padStart(2, '0');
-                document.getElementById('resultCorrect').textContent = `${correct} / ${total}`;
+                document.getElementById('resultCorrect').textContent = passed;
                 document.getElementById('resultTime').textContent = `${mins}:${secs}`;
                 document.getElementById('resultOverlay').classList.add('show');
 
@@ -1277,9 +1280,7 @@
                         const payload = {
                             班级: challengeUser.class,
                             姓名: challengeUser.name,
-                            得分: score,
-                            答对: correct,
-                            总题数: total,
+                            闯关数: passed,
                             用时秒: elapsed,
                             submitted_at: new Date().toISOString()
                         };
@@ -1300,8 +1301,9 @@
             function resetChallengeMode() {
                 isChallengeMode = false;
                 challengeUser = null;
-                challengeCorrect = 0;
-                challengeSeconds = 0;
+                challengePassed = 0;
+                challengeRemaining = 0;
+                currentHintUsed = false;
                 if (challengeTimerInterval) {
                     clearInterval(challengeTimerInterval);
                     challengeTimerInterval = null;
@@ -1350,35 +1352,34 @@
                         return;
                     }
 
-                    // 按姓名分组保留最佳成绩
+                    // 按姓名分组保留最佳闯关记录
                     const bestMap = new Map();
                     todayItems.forEach(item => {
                         const cls = item['班级'] || item.class || '';
                         const name = item['姓名'] || item.name || '';
                         const key = `${cls}|${name}`;
                         const existing = bestMap.get(key);
-                        const score = Number(item['得分'] || item.score || 0);
+                        const passes = Number(item['闯关数'] || item.passes || item['得分'] || item.score || 0);
                         const seconds = Number(item['用时秒'] || item.seconds || 0);
                         if (!existing) {
-                            bestMap.set(key, { ...item, _score: score, _seconds: seconds, _cls: cls, _name: name });
+                            bestMap.set(key, { ...item, _passes: passes, _seconds: seconds, _cls: cls, _name: name });
                         } else {
-                            if (score > existing._score || (score === existing._score && seconds < existing._seconds)) {
-                                bestMap.set(key, { ...item, _score: score, _seconds: seconds, _cls: cls, _name: name });
+                            if (passes > existing._passes || (passes === existing._passes && seconds < existing._seconds)) {
+                                bestMap.set(key, { ...item, _passes: passes, _seconds: seconds, _cls: cls, _name: name });
                             }
                         }
                     });
                     const uniqueItems = Array.from(bestMap.values());
 
                     uniqueItems.sort((a, b) => {
-                        if (b._score !== a._score) return b._score - a._score;
+                        if (b._passes !== a._passes) return b._passes - a._passes;
                         return a._seconds - b._seconds;
                     });
 
                     let html = '';
                     uniqueItems.forEach((item, idx) => {
                         const medal = idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : `#${idx+1}`;
-                        const correct = item['答对'] ?? item.correct ?? 0;
-                        const total = item['总题数'] ?? item.total ?? CHALLENGE_TOTAL;
+                        const passes = item._passes || 0;
                         const seconds = item._seconds || 0;
                         const mm = String(Math.floor(seconds / 60)).padStart(2, '0');
                         const ss = String(seconds % 60).padStart(2, '0');
@@ -1386,7 +1387,7 @@
                             <div class="rank-item">
                                 <span class="rank-pos">${medal}</span>
                                 <span class="rank-name">${item._cls} ${item._name}</span>
-                                <span class="rank-correct">${correct}/${total}</span>
+                                <span class="rank-correct">${passes} 关</span>
                                 <span class="rank-time">${mm}:${ss}</span>
                             </div>
                         `;
