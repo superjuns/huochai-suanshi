@@ -325,11 +325,12 @@
                 overflow: hidden;
             }
             .app {
-                padding: 8px 20px 8px;
+                padding: 6px 16px 6px;
                 flex-direction: row;
                 flex-wrap: wrap;
-                align-content: center;
-                gap: 12px;
+                align-content: flex-start;
+                align-items: flex-start;
+                gap: 8px;
             }
             header {
                 width: 100%;
@@ -349,14 +350,14 @@
                 overflow: hidden;
             }
             .board {
-                flex: 2 1 65%;
-                min-height: 60vh;
-                max-height: 80vh;
-                padding: 12px 16px;
-                border-radius: 20px;
+                flex: 2 1 60%;
+                min-height: 0;
+                max-height: calc(100vh - 60px);
+                padding: 10px 14px;
+                border-radius: 16px;
             }
             #game {
-                max-height: 70vh;
+                max-height: calc(100vh - 120px);
                 width: 100%;
                 height: auto;
             }
@@ -658,24 +659,50 @@
         @media (orientation: landscape) {
             .rank-panel {
                 flex: 1 1 100%;
-                max-height: 25vh;
+                max-height: 20vh;
+                padding: 8px 12px;
+            }
+            .rank-title {
+                font-size: 13px;
+                margin-bottom: 4px;
             }
         }
 
         @media (orientation: landscape) and (max-height: 500px) {
+            .app {
+                gap: 4px;
+                padding: 4px 12px 4px;
+            }
+            header {
+                padding-bottom: 0;
+            }
+            .title {
+                font-size: 15px;
+            }
+            .btn-challenge {
+                padding: 4px 8px;
+                font-size: 11px;
+            }
+            .timer-box {
+                font-size: 11px;
+                padding: 2px 6px;
+            }
+            .round {
+                font-size: 11px;
+            }
             .board {
-                min-height: 40vh;
-                padding: 8px 12px;
+                padding: 6px 10px;
             }
             #game {
-                max-height: 50vh;
+                max-height: calc(100vh - 140px);
             }
             .btn {
-                padding: 10px 4px;
+                padding: 8px 4px;
                 font-size: 12px;
             }
             .task {
-                font-size: 12px;
+                font-size: 11px;
+                margin-bottom: 2px;
             }
             .hint {
                 font-size: 11px;
