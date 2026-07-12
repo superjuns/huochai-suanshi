@@ -1391,6 +1391,13 @@
                 document.getElementById('resultOverlay').classList.remove('show');
             };
 
+
+            function getBeijingTodayStr() {
+                var d = new Date();
+                d.setTime(d.getTime() + 8 * 3600 * 1000);
+                return d.toISOString().slice(0, 10);
+            }
+
             // ---- 排行榜 ----
             window.fetchRank = async function() {
                 const rankList = document.getElementById('rankList');
