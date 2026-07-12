@@ -912,8 +912,10 @@
                 return out;
             }
 
-            function makePuzzle() {
-                let pool = [];
+            // 按难度分级的题目池（全局缓存，只生成一次）
+            let puzzlePools = null;
+            function buildPuzzlePools() {
+                const pools = { 1: [], 2: [], 3: [] };
                 const eqs = allEquations();
                 for (const target of eqs) {
                     for (let a = 0; a < 10; a++)
@@ -931,9 +933,44 @@
                                         B.forEach(s => { if (!A.has(s)) to.push(i + s) });
                                     }
                                     if (from.length === to.length && from.length >= 1 && from.length <= 3) {
-                                        pool.push({ start, target, moves: from.length });
+                                        pools[from.length].push({ start, target, moves: from.length });
                                     }
                                 }
+                }
+                return pools;
+            }
+
+            function makePuzzle() {
+                if (!puzzlePools) puzzlePools = buildPuzzlePools();
+
+                // 根据已完成题数控制难度分布
+                // 第1-5题：以1根为主（约60%），少量2根（约35%），极少3根（约5%）
+                // 第6-15题：1根（约25%），2根为主（约60%），少量3根（约15%）
+                // 第16题以后：1根（约15%），2根（约55%），3根（约30%）— 3根仍是穿插，不超过1/3
+                let r = Math.random();
+                let moves;
+                if (round <= 5) {
+                    if (r < 0.6) moves = 1;
+                    else if (r < 0.95) moves = 2;
+                    else moves = 3;
+                } else if (round <= 15) {
+                    if (r < 0.25) moves = 1;
+                    else if (r < 0.85) moves = 2;
+                    else moves = 3;
+                } else {
+                    if (r < 0.15) moves = 1;
+                    else if (r < 0.7) moves = 2;
+                    else moves = 3;
+                }
+
+                const pool = puzzlePools[moves];
+                // 万一对应池子空了，降级到更低难度
+                if (pool.length === 0) {
+                    for (let m = moves - 1; m >= 1; m--) {
+                        if (puzzlePools[m].length > 0) {
+                            return puzzlePools[m][Math.floor(Math.random() * puzzlePools[m].length)];
+                        }
+                    }
                 }
                 return pool[Math.floor(Math.random() * pool.length)];
             }
@@ -1390,13 +1427,6 @@
             window.closeResult = function() {
                 document.getElementById('resultOverlay').classList.remove('show');
             };
-
-
-            function getBeijingTodayStr() {
-                var d = new Date();
-                d.setTime(d.getTime() + 8 * 3600 * 1000);
-                return d.toISOString().slice(0, 10);
-            }
 
             // ---- 排行榜 ----
             window.fetchRank = async function() {
