@@ -1411,7 +1411,7 @@
                         return;
                     }
 
-                    const today = new Date().toISOString().slice(0, 10);
+                    const today = getBeijingTodayStr();
                     const todayItems = submissions.filter(item => {
                         const dateStr = item.submitted_at || item.timestamp || item['提交时间'] || '';
                         return String(dateStr).startsWith(today);
