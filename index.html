@@ -1,3 +1,41 @@
+
+            // 自动填充：从 localStorage 读取登录信息
+            const nameInput = document.getElementById('authName');
+            const classSelect = document.getElementById('authClass');
+            if (nameInput && !nameInput.value) {
+                const savedCls = localStorage.getItem('huochai_class');
+                const savedName = localStorage.getItem('huochai_name');
+                if (savedCls && savedName) {
+                    classSelect.value = savedCls.replace('班', '');
+                    nameInput.value = savedName;
+                }
+            }
+        // URL参数自动登录工具函数
+        function getUrlParam(name) {
+            return new URLSearchParams(window.location.search).get(name) || '';
+        }
+        function normStr(s) {
+            return String(s || '').replace(/班/g, '').replace(/\s/g, '').toLowerCase();
+        }
+        // URL参数自动登录（平台跳转时免输入）
+        async function tryAutoLoginFromUrl() {
+            const cls = getUrlParam('class') || getUrlParam('cls') || getUrlParam('班级');
+            const name = getUrlParam('name') || getUrlParam('姓名');
+            if (!cls || !name) return false;
+            const normCls = /^\d+$/.test(cls) ? cls + '班' : cls;
+            try {
+                const res = await fetch(WHITELIST_API);
+                const data = await res.json();
+                const list = data.submissions || data.data || [];
+                const allowed = list.some(item =>
+                    normStr(item.class) === normStr(normCls) && normStr(item.name) === normStr(name)
+                );
+                if (!allowed) return false;
+                localStorage.setItem('huochai_class', normCls);
+                localStorage.setItem('huochai_name', name);
+                return true;
+            } catch (e) { return false; }
+        }
 <!doctype html>
 <html lang="zh-CN">
 <head>
@@ -1324,6 +1362,8 @@
 
             // ---- 开始挑战 ----
             function startChallenge(cls, name) {
+            localStorage.setItem('huochai_class', cls);
+            localStorage.setItem('huochai_name', name);
                 isChallengeMode = true;
                 challengeUser = { class: cls, name: name };
                 challengePassed = 0;
@@ -1531,6 +1571,9 @@
             // 每30秒自动刷新
             setInterval(fetchRank, 30000);
         })();
+    
+        // URL参数自动登录（平台跳转时免输入）
+        tryAutoLoginFromUrl();
     </script>
 </body>
 </html>
