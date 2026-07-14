@@ -1257,6 +1257,13 @@
             // ---- 身份验证 ----
             window.openAuthModal = function() {
                 if (isChallengeMode) { resetChallengeMode(); return; }
+                // URL自动登录或本地已有登录信息时，直接开始挑战
+                const savedCls = localStorage.getItem('huochai_class');
+                const savedName = localStorage.getItem('huochai_name');
+                if (savedCls && savedName) {
+                    startChallenge(savedCls, savedName);
+                    return;
+                }
                 document.getElementById('authModal').classList.add('show');
                 document.getElementById('authError').textContent = '';
                 document.getElementById('nameInput').value = '';
