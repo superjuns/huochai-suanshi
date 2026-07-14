@@ -1,41 +1,3 @@
-
-            // 自动填充：从 localStorage 读取登录信息
-            const nameInput = document.getElementById('authName');
-            const classSelect = document.getElementById('authClass');
-            if (nameInput && !nameInput.value) {
-                const savedCls = localStorage.getItem('huochai_class');
-                const savedName = localStorage.getItem('huochai_name');
-                if (savedCls && savedName) {
-                    classSelect.value = savedCls.replace('班', '');
-                    nameInput.value = savedName;
-                }
-            }
-        // URL参数自动登录工具函数
-        function getUrlParam(name) {
-            return new URLSearchParams(window.location.search).get(name) || '';
-        }
-        function normStr(s) {
-            return String(s || '').replace(/班/g, '').replace(/\s/g, '').toLowerCase();
-        }
-        // URL参数自动登录（平台跳转时免输入）
-        async function tryAutoLoginFromUrl() {
-            const cls = getUrlParam('class') || getUrlParam('cls') || getUrlParam('班级');
-            const name = getUrlParam('name') || getUrlParam('姓名');
-            if (!cls || !name) return false;
-            const normCls = /^\d+$/.test(cls) ? cls + '班' : cls;
-            try {
-                const res = await fetch(WHITELIST_API);
-                const data = await res.json();
-                const list = data.submissions || data.data || [];
-                const allowed = list.some(item =>
-                    normStr(item.class) === normStr(normCls) && normStr(item.name) === normStr(name)
-                );
-                if (!allowed) return false;
-                localStorage.setItem('huochai_class', normCls);
-                localStorage.setItem('huochai_name', name);
-                return true;
-            } catch (e) { return false; }
-        }
 <!doctype html>
 <html lang="zh-CN">
 <head>
@@ -1572,6 +1534,46 @@
             setInterval(fetchRank, 30000);
         })();
     
+        // 自动填充：从 localStorage 读取登录信息
+        const autoNameInput = document.getElementById('nameInput');
+        const autoClassSelect = document.getElementById('classSelect');
+        if (autoNameInput && !autoNameInput.value) {
+            const savedCls = localStorage.getItem('huochai_class');
+            const savedName = localStorage.getItem('huochai_name');
+            if (savedCls && savedName) {
+                autoClassSelect.value = savedCls;
+                autoNameInput.value = savedName;
+            }
+        }
+        // 白名单API
+        const WHITELIST_API = 'https://wzkjgz.site/api/5tmbx2o6rg/all';
+        // URL参数自动登录工具函数
+        function getUrlParam(name) {
+        return new URLSearchParams(window.location.search).get(name) || '';
+        }
+        function normStr(s) {
+        return String(s || '').replace(/班/g, '').replace(/\s/g, '').toLowerCase();
+        }
+        // URL参数自动登录（平台跳转时免输入）
+        async function tryAutoLoginFromUrl() {
+        const cls = getUrlParam('class') || getUrlParam('cls') || getUrlParam('班级');
+        const name = getUrlParam('name') || getUrlParam('姓名');
+        if (!cls || !name) return false;
+        const normCls = /^\d+$/.test(cls) ? cls + '班' : cls;
+        try {
+        const res = await fetch(WHITELIST_API);
+        const data = await res.json();
+        const list = data.submissions || data.data || [];
+        const allowed = list.some(item =>
+        normStr(item.class) === normStr(normCls) && normStr(item.name) === normStr(name)
+        );
+        if (!allowed) return false;
+        localStorage.setItem('huochai_class', normCls);
+        localStorage.setItem('huochai_name', name);
+        return true;
+        } catch (e) { return false; }
+        }
+
         // URL参数自动登录（平台跳转时免输入）
         tryAutoLoginFromUrl();
     </script>
