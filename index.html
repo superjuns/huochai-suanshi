@@ -1294,7 +1294,7 @@
 
             // ---- 身份验证 ----
             window.openAuthModal = function() {
-                if (isChallengeMode) return;
+                if (isChallengeMode) { resetChallengeMode(); return; }
                 document.getElementById('authModal').classList.add('show');
                 document.getElementById('authError').textContent = '';
                 document.getElementById('nameInput').value = '';
@@ -1373,8 +1373,8 @@
                 userBadge.style.display = 'inline-block';
                 timerDisplay.style.display = 'inline-block';
                 timerDisplay.textContent = '10:00';
-                btnChallenge.disabled = true;
-                btnChallenge.textContent = '⏳ 挑战中';
+                btnChallenge.disabled = false;
+                btnChallenge.textContent = '⏹ 结束挑战';
                 tipBtn.disabled = false;
 
                 round = 0;
