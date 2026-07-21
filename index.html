@@ -820,6 +820,23 @@
     </div>
 
     <script>
+// === Supabase 配置（自动生成）===
+const SUPABASE_KEY = 'sb_publishable_EAfnJgOY7VsXPdZkEcrvBA_0qkNGlyD';
+const _origFetch = window.fetch;
+window.fetch = function(url, options) {
+    options = options || {};
+    var u = (typeof url === 'string') ? url : (url && url.url) || '';
+    if (u.indexOf('bjugehxenrvaqtodjkbc.supabase.co') !== -1) {
+        options.headers = Object.assign({}, options.headers || {}, {
+            'apikey': SUPABASE_KEY,
+            'Authorization': 'Bearer ' + SUPABASE_KEY,
+            'Content-Type': 'application/json'
+        });
+    }
+    return _origFetch.call(this, url, options);
+};
+// === Supabase 配置结束 ===
+
         (() => {
             // ---------- 方向检测与遮罩控制 ----------
             const overlay = document.getElementById('rotateOverlay');
@@ -1236,10 +1253,10 @@
             // 答题模式（挑战）
             // ============================================================
             // ===== 配置（创建任务后填入） =====
-            const WHITELIST_URL = 'https://wzkjgz.site/api/5tmbx2o6rg/all';
-            // 下面两个链接需要在 wzkjgz.site 导入任务后获取
-            const SCORE_POST_URL = 'https://wzkjgz.site/api/dvr2frebwx';   // 上传成绩的 POST 链接
-            const SCORE_GET_URL = 'https://wzkjgz.site/api/dvr2frebwx/all';    // 排行榜的 GET 链接（末尾加 /all）
+            const WHITELIST_URL = 'https://bjugehxenrvaqtodjkbc.supabase.co/rest/v1/whitelist?select=*';
+            // Supabase REST API 地址（自动配置）
+            const SCORE_POST_URL = 'https://bjugehxenrvaqtodjkbc.supabase.co/rest/v1/scores_huochai';   // 上传成绩的 POST 链接
+            const SCORE_GET_URL = 'https://bjugehxenrvaqtodjkbc.supabase.co/rest/v1/scores_huochai?select=*';    // 排行榜的 GET 链接（末尾加 /all）
             // =================================
 
             let isChallengeMode = false;
@@ -1297,7 +1314,7 @@
                     const resp = await fetch(WHITELIST_URL);
                     if (!resp.ok) throw new Error('网络请求失败');
                     const data = await resp.json();
-                    const submissions = data.submissions || [];
+                    const submissions = data || [];
                     const matched = submissions.some(item =>
                         String(item['班级'] || item.class || '') === cls &&
                         String(item['姓名'] || item.name || '') === name
@@ -1470,7 +1487,7 @@
                     const resp = await fetch(SCORE_GET_URL);
                     if (!resp.ok) throw new Error('网络请求失败');
                     const data = await resp.json();
-                    const submissions = data.submissions || [];
+                    const submissions = data || [];
 
                     if (submissions.length === 0) {
                         rankList.innerHTML = '<div class="rank-empty">暂无数据，快来挑战吧！</div>';
@@ -1553,7 +1570,7 @@
             }
         }
         // 白名单API
-        const WHITELIST_API = 'https://wzkjgz.site/api/5tmbx2o6rg/all';
+        const WHITELIST_API = 'https://bjugehxenrvaqtodjkbc.supabase.co/rest/v1/whitelist?select=*';
         // URL参数自动登录工具函数
         function getUrlParam(name) {
         return new URLSearchParams(window.location.search).get(name) || '';
@@ -1570,7 +1587,7 @@
         try {
         const res = await fetch(WHITELIST_API);
         const data = await res.json();
-        const list = data.submissions || data.data || [];
+        const list = data || data.data || [];
         const allowed = list.some(item =>
         normStr(item.class) === normStr(normCls) && normStr(item.name) === normStr(name)
         );
